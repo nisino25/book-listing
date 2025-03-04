@@ -75,7 +75,7 @@
       v-if="!displayingData && currentMode === 'search'"
       class="text-center text-lg font-medium my-4"
     >
-      <h5>見つかりませんでした。</h5>
+      <h5>見つかりませんでした。 </h5>
     </div>
 
     <!-- My List Grid -->
