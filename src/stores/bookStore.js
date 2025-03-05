@@ -9,12 +9,13 @@ export const useBookStore = defineStore('bookStore', {
         incomingTotal: null,
         maxResults: 40,
         query: '',
-        authorQuery: '村上春樹',
+        // authorQuery: '村上春樹',
+        authorQuery: '',
         myBookList: [],
         displayingData: [],
         currentMode: 'search',
         baseUrl:
-            'https://script.google.com/macros/s/AKfycbymXhvSkr7uPI_9SuY6FbZsWBn_U6mJ1s05DNG4WOlw_vaPAnsGi9Oqc5WtPbpNaPE/exec',
+            'https://script.google.com/macros/s/AKfycbwWv7_QS4f3Nd7DAyMtLEdCahNuHowCkv57zDyr19v3nwOAU6FQACd61e3VjFAw8ml1/exec',
 
         isLoading: false,
         hasSearched: false,
@@ -23,6 +24,7 @@ export const useBookStore = defineStore('bookStore', {
         // Load your Google Sheets data
         fetchApi() {
             this.displayingData = [];
+            this.myBookList = [];
             this.isLoading = true;
             console.log(`getting reload`);
             const url = `${this.baseUrl}?callback=jsonpCallback&action=fetchData`;
@@ -131,44 +133,80 @@ export const useBookStore = defineStore('bookStore', {
         },
 
         async addBookToSpreadsheet(book) {
-            const index = this.myBookList.findIndex((item) => item.id === book.id);
-            if (index !== -1) {
-                this.myBookList.splice(index, 1);
-                alert("Book removed from your list.");
-            } else {
-                const params = new URLSearchParams({
-                    action: "addRow",
-                    id: book.id,
-                    title: book.volumeInfo.title,
-                    author: book.volumeInfo?.authors?.join(", ") ?? "Unknown",
-                    startingDate: new Date().toISOString().split("T")[0],
-                    finishingDate: "",
-                    releaseDate: book.volumeInfo?.publishedDate ?? "",
-                    thumbnail: book.volumeInfo?.imageLinks?.smallThumbnail ?? "",
-                    genre: book.volumeInfo?.categories?.join(", ") ?? "Unknown",
-                    subtitle: book.volumeInfo?.subtitle ?? "",
-                    status: "Not Started",
-                    timestamp: new Date().getTime(),
-                });
 
-                try {
-                    const URL = `${this.baseUrl}?${params.toString()}&callback=jsonpCallback`;
-                    console.log("Fetching:", URL);
+            this.myBookList.push(book);
+            alert("Book added to your list!");
+            
+            const params = new URLSearchParams({
+                action: "addRow",
+                id: book.id,
+                title: book.volumeInfo.title,
+                author: book.volumeInfo?.authors?.join(", ") ?? "Unknown",
+                startingDate: new Date().toISOString().split("T")[0],
+                finishingDate: "",
+                releaseDate: book.volumeInfo?.publishedDate ?? "",
+                thumbnail: book.volumeInfo?.imageLinks?.smallThumbnail ?? "",
+                genre: book.volumeInfo?.categories?.join(", ") ?? "Unknown",
+                subtitle: book.volumeInfo?.subtitle ?? "",
+                status: "Not Started",
+                timestamp: new Date().getTime(),
+            });
 
-                    const response = await fetch(URL);
-                    const json = await response.json();
-                    console.log("Response:", json);
+            try {
+                const URL = `${this.baseUrl}?${params.toString()}&callback=jsonpCallback`;
+                console.log("Fetching:", URL);
 
-                    if (json.success) {
-                        alert("Book added to your spreadsheet!");
-                        console.log("Added:", json);
-                    } else {
-                        throw new Error(json.message);
-                    }
-                } catch (error) {
-                    console.error("Error adding book:", error.message);
+                const response = await fetch(URL);
+                const json = await response.json();
+                console.log("Response:", json);
+
+                if (json.success) {
+                    alert("Book added to your spreadsheet!");
+                    console.log("Added:", json);
+                } else {
+                    throw new Error(json.message);
                 }
+            } catch (error) {
+                console.error("Error adding book:", error.message);
             }
+            
         },
+
+        async deleteRow(book) {
+
+            const index = this.myBookList.findIndex((item) => item.id === book.id);
+
+            const confirmDelete = confirm(`Are you sure you want to remove "${book.title}" from your list?`);
+            if (!confirmDelete) return;
+            
+            this.myBookList.splice(index, 1);
+            alert("Book removed from your list.");
+            
+            const params = new URLSearchParams({
+                action: "deleteRow",
+                bookId: book.id,
+            });
+
+            try {
+                const URL = `${this.baseUrl}?${params.toString()}&callback=jsonpCallback`;
+                console.log("Fetching:", URL);
+
+                const response = await fetch(URL);
+                const json = await response.json();
+                console.log("Response:", json);
+
+                if (json.success) {
+                    alert("Book added to your spreadsheet!");
+                    console.log("Added:", json);
+                } else {
+                    throw new Error(json.message);
+                }
+            } catch (error) {
+                console.error("Error adding book:", error.message);
+            }
+            
+        },
+
+
     },
 });

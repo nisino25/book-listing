@@ -2,7 +2,7 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <!-- Main Content Area -->
-    <div class="flex-1 pt-4 absolute h-[calc(100dvh-100px)] overflow-scroll">
+    <div class="flex-1 pt-4 absolute h-[calc(100dvh-102px)] overflow-scroll">
       <SearchTab />
       <BookResult />
     </div>

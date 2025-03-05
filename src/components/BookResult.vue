@@ -86,10 +86,10 @@ export default {
 
 
     const handleBookAction = (item) => {
-      if (store.currentMode === 'search') {
+      if (store.currentMode === 'search' && !store.isInList(item)) {
         store.addBookToSpreadsheet(item);
       } else {
-        store.toggleBookInList(item);
+        store.deleteRow(item);
       }
     };
 
