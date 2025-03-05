@@ -1,131 +1,174 @@
-import { defineComponent, ref, computed, onMounted, onUnmounted } from "vue";
-import { useBookStore } from "@/stores/bookStore";
-// import { BrowserMultiFormatReader } from "@zxing/library";
-import MenuTab from "@/components/MenuTab.vue";
-import SearchResults from "@/components/SearchResults.vue";
-import SearchInput from "@/components/SearchInput.vue";
+// src/stores/bookStore.js
+import { defineStore } from 'pinia';
 
-export default defineComponent({
-  components: {
-    MenuTab,
-    SearchResults,
-    SearchInput,
-  },
-  setup() {
-    const bookStore = useBookStore();
-    const query = ref("百田尚樹");
-    const authorQuery = ref("");
-    const displayingData = ref([]);
-    const incomingTotal = ref(null);
-    const maxResults = 40;
-    const loading = ref(false);
-    const myBookList = ref([]);
-    
-    const scanner = ref(null);
-    const bookTitle = ref("");
-    const bookAuthor = ref("");
-    const bookCover = ref("");
-    const bookDescription = ref("");
-    const isScanning = ref(false);
-    const videoElement = ref(null);
-    const manualISBN = ref("");
-    // const hasSearched = ref(false);
+// We define our store with a unique name ("bookStore")
+// All of your state and actions from the component go here.
+export const useBookStore = defineStore('bookStore', {
+    state: () => ({
+        fetchedBookData: [],
+        incomingTotal: null,
+        maxResults: 40,
+        query: '',
+        authorQuery: '村上春樹',
+        myBookList: [],
+        displayingData: [],
+        currentMode: 'search',
+        baseUrl:
+            'https://script.google.com/macros/s/AKfycbymXhvSkr7uPI_9SuY6FbZsWBn_U6mJ1s05DNG4WOlw_vaPAnsGi9Oqc5WtPbpNaPE/exec',
 
-    const baseUrl = "https://script.google.com/macros/s/AKfycbymXhvSkr7uPI_9SuY6FbZsWBn_U6mJ1s05DNG4WOlw_vaPAnsGi9Oqc5WtPbpNaPE/exec";
+        isLoading: false,
+        hasSearched: false,
+    }),
+    actions: {
+        // Load your Google Sheets data
+        fetchApi() {
+            this.displayingData = [];
+            this.isLoading = true;
+            console.log(`getting reload`);
+            const url = `${this.baseUrl}?callback=jsonpCallback&action=fetchData`;
+            console.log(url);
 
-    const fetchApi = () => {
-      console.log(`getting reload`);
-      const url = `${baseUrl}?callback=jsonpCallback&action=fetchData`;
-      console.log(url);
+            // Define the callback function globally
+            window.jsonpCallback = (data) => {
+                if (data.success) {
+                    this.displayingData = data.data;
+                    this.isLoading = false;
+                    this.myBookList = this.displayingData;
+                    console.log(this.myBookList);
+                } else {
+                    console.error("Error fetching data:", data.message);
+                }
+            };
 
-      window.jsonpCallback = (data) => {
-        console.log("API Response (fetchData):", data);
-        if (data.success) {
-          myBookList.value = data.data;
-        } else {
-          console.error("Error fetching data:", data.message);
-        }
-      };
+            // Dynamically add a <script> tag to call the JSONP API
+            const script = document.createElement("script");
+            script.src = url;
+            script.async = true;
+            document.body.appendChild(script);
 
-      const script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      document.body.appendChild(script);
-      script.onload = () => {
-        document.body.removeChild(script);
-      };
-    };
+            // Clean up the <script> tag after the request
+            script.onload = () => {
+                document.body.removeChild(script);
+            };
+        },
 
-    const fetchData = async () => {
-      console.log("Fetching data...");
-      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query.value)}+inauthor:${authorQuery.value}&maxResults=${maxResults}`;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Status: ${response.status}`);
-        }
-        const json = await response.json();
-        console.log("Fetched data:", json);
-        displayingData.value = json.items;
-        incomingTotal.value = json.totalItems;
-      } catch (error) {
-        console.error("Fetch error:", error.message);
-      }
-      loading.value = true;
-    };
+        // Search from Google Books API
+        async fetchData() {
+            this.displayingData = []
+            this.isLoading = true;
+            const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+                this.query
+            )}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}`;
 
-    const getMore = async () => {
-      console.log("getting more");
-      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query.value)}&maxResults=${maxResults}&startIndex=${displayingData.value.length}`;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Status: ${response.status}`);
-        }
-        const json = await response.json();
-        displayingData.value = displayingData.value.concat(json.items);
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Status: ${response.status}`);
+                }
+                const json = await response.json();
+                this.incomingTotal = json.totalItems;
+                this.isLoading = false;
+                this.hasSearched = true;
+                this.displayingData = json.items;
+            } catch (error) {
+                console.error(error.message);
+            }
+        },
 
-    const toggleBookInList = (book) => {
-      bookStore.toggleBookInList(book);
-    };
+        async getMore() {
+            console.log('gettin more');
+            const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+                this.query
+            )}&maxResults=${this.maxResults}&startIndex=${this.fetchedBookData.length}`;
 
-    const isInList = (book) => {
-      return bookStore.isInList(book);
-    };
+            console.log(url);
 
-    onMounted(() => {
-      console.clear();
-      fetchApi();
-    });
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Status: ${response.status}`);
+                }
+                const json = await response.json();
+                // Append new results to existing
+                this.displayingData = this.displayingData.concat(json.items);
+            } catch (error) {
+                console.error(error.message);
+            }
+        },
 
-    onUnmounted(() => {
-      scanner.value?.reset();
-    });
+        toggleBookInList(book) {
+            const index = this.myBookList.findIndex((item) => item.id === book.id);
+            if (index !== -1) {
+                this.myBookList.splice(index, 1);
+                alert("Book removed from your list.");
+            } else {
+                console.log(book.volumeInfo.imageLinks);
 
-    return {
-      query,
-      authorQuery,
-      displayingData,
-      incomingTotal,
-      loading,
-      fetchData,
-      getMore,
-      toggleBookInList,
-      isInList,
-      manualISBN,
-      bookTitle,
-      bookAuthor,
-      bookCover,
-      bookDescription,
-      isScanning,
-      videoElement,
-      myBookList,
-      currentMode: computed(() => bookStore.currentMode),
-      setCurrentMode: bookStore.setCurrentMode,
-    };
-  },
+                let addingData = {
+                    id: book.id,
+                    title: book.volumeInfo.title,
+                    publishedDate: book.volumeInfo?.publishedDate,
+                    pageCount: book.volumeInfo?.pageCount,
+                    subtitle: book.volumeInfo?.pageCount.subtitle ?? false,
+                    authors: book.volumeInfo?.authors?.join(", ") ?? "Unknown",
+                };
+
+                if (
+                    book.volumeInfo?.imageLinks?.smallThumbnail ===
+                    `http://books.google.com/books/content?id=${addingData.id}&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api`
+                ) {
+                    addingData.thumbnail = book.volumeInfo?.imageLinks?.smallThumbnail;
+                }
+
+                this.myBookList.push(addingData);
+                alert("Book added to your list!");
+            }
+            localStorage.setItem("myBookList", JSON.stringify(this.myBookList));
+        },
+
+        isInList(book) {
+            return this.myBookList.some((item) => item.id === book.id);
+        },
+
+        async addBookToSpreadsheet(book) {
+            const index = this.myBookList.findIndex((item) => item.id === book.id);
+            if (index !== -1) {
+                this.myBookList.splice(index, 1);
+                alert("Book removed from your list.");
+            } else {
+                const params = new URLSearchParams({
+                    action: "addRow",
+                    id: book.id,
+                    title: book.volumeInfo.title,
+                    author: book.volumeInfo?.authors?.join(", ") ?? "Unknown",
+                    startingDate: new Date().toISOString().split("T")[0],
+                    finishingDate: "",
+                    releaseDate: book.volumeInfo?.publishedDate ?? "",
+                    thumbnail: book.volumeInfo?.imageLinks?.smallThumbnail ?? "",
+                    genre: book.volumeInfo?.categories?.join(", ") ?? "Unknown",
+                    subtitle: book.volumeInfo?.subtitle ?? "",
+                    status: "Not Started",
+                    timestamp: new Date().getTime(),
+                });
+
+                try {
+                    const URL = `${this.baseUrl}?${params.toString()}&callback=jsonpCallback`;
+                    console.log("Fetching:", URL);
+
+                    const response = await fetch(URL);
+                    const json = await response.json();
+                    console.log("Response:", json);
+
+                    if (json.success) {
+                        alert("Book added to your spreadsheet!");
+                        console.log("Added:", json);
+                    } else {
+                        throw new Error(json.message);
+                    }
+                } catch (error) {
+                    console.error("Error adding book:", error.message);
+                }
+            }
+        },
+    },
 });
