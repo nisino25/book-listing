@@ -16,12 +16,12 @@ module.exports = defineConfig({
       background_color: "#ffffff",
       icons: [
         {
-          src: "/img/icons/icon-192x192.png",
+          src: "/img/icons/favicon.png",
           sizes: "192x192",
           type: "image/png"
         },
         {
-          src: "/img/icons/icon-512x512.png",
+          src: "/img/icons/favicon.png",
           sizes: "512x512",
           type: "image/png"
         }

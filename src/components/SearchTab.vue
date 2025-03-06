@@ -1,7 +1,7 @@
 <!-- src/components/SearchTab.vue -->
 <template>
   <div class="p-4" v-if="currentMode == 'search'">
-    <h2 class="text-xl font-semibold">Search books: {{ currentMode }}</h2>
+    <h2 class="text-xl font-semibold">Search books</h2>
     <div class="mt-2">
       <input
         type="text"
@@ -13,6 +13,12 @@
         type="text"
         v-model="store.authorQuery"
         placeholder="author title"
+        class="block w-full border rounded p-2 mb-2"
+      />
+      <input
+        type="number"
+        v-model="store.isbnQuery"
+        placeholder="ISBN"
         class="block w-full border rounded p-2 mb-2"
       />
       <button

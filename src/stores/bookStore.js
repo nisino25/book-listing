@@ -11,6 +11,7 @@ export const useBookStore = defineStore('bookStore', {
         query: '',
         // authorQuery: '村上春樹',
         authorQuery: '',
+        isbnQuery: '',
         myBookList: [],
         displayingData: [],
         currentMode: 'search',
@@ -58,9 +59,62 @@ export const useBookStore = defineStore('bookStore', {
         async fetchData() {
             this.displayingData = []
             this.isLoading = true;
-            const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-                this.query
-            )}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}`;
+
+            if(this.isbnQuery){
+                const url = `https://api.openbd.jp/v1/get?isbn=${this.isbnQuery}`;
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Status: ${response.status}`);
+                    }
+                    const json = await response.json();
+
+                    // Check if data is valid
+                    if (!json || !json[0]) {
+                        throw new Error("No book data found");
+                    }
+
+                    console.log(json);
+
+                    // Transform API response into desired format
+                    const transformedData = json.map(book => ({
+                        id: book.summary.isbn,
+                        volumeInfo: {
+                            title: book.summary.title,
+                            authors: [book.summary.author.replace(/,/g, ', ')], // Format authors
+                            startingDate: "",
+                            finishingDate: "",
+                            publishedDate: book.hanmoto?.dateshuppan || "", // Handle optional data
+                            thumbnail: book.summary.cover || "", // Use cover if available
+                            genre: book.summary.series || "",
+                            subtitle: "",
+                            status: "",
+                            timestamp: new Date().toISOString()
+                        }
+                    }));
+
+                    // Assign transformed data to displayingData
+                    this.displayingData = transformedData;
+                    console.log(this.displayingData);
+                    this.isLoading = false;
+                    this.hasSearched = true;
+                } catch (error) {
+                    this.isLoading = false;
+                    this.hasSearched = true;
+                    this.displayingData = []
+                    console.error(error.message);
+                }
+
+
+                return;
+            }
+
+            let url = `https://www.googleapis.com/books/v1/volumes?q=${this.query}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}&orderBy=relevance`;
+            
+            if(this.query.length > 0 && this.authorQuery.length == 0){
+                url = `https://www.googleapis.com/books/v1/volumes?q=${this.query}&maxResults=${this.maxResults}&orderBy=relevance`;
+            }
 
             try {
                 const response = await fetch(url);
@@ -72,6 +126,7 @@ export const useBookStore = defineStore('bookStore', {
                 this.isLoading = false;
                 this.hasSearched = true;
                 this.displayingData = json.items;
+                console.log(this.displayingData)
             } catch (error) {
                 console.error(error.message);
             }
