@@ -4,7 +4,7 @@ module.exports = defineConfig({
   transpileDependencies: true,
 
   pwa: {
-    name: "My Vue PWA",
+    name: "Book library",
     themeColor: "#4A90E2",
     msTileColor: "#000000",
     appleMobileWebAppCapable: "yes",
