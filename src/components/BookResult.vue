@@ -11,7 +11,7 @@
       ]"
       >
       <template v-for="item in store.displayingData" :key="item.id">
-        <div class="p-2 border rounded shadow-sm relative pb-[50px]">
+        <div class="p-1 relative pb-[50px]">
           <img
             :src="getThumbnail(item)"
             alt="Thumbnail"
@@ -24,15 +24,14 @@
           <small class="block mb-2 text-gray-700">
             {{ store.currentMode === 'search' ? item.volumeInfo?.authors?.join(", ") ?? "Unknown" :  item.author }}
           </small>
-          <small class="block text-gray-700">
+          <small class="block text-gray-700 text-right">
             {{ store.currentMode === 'search' ? getPublishedDate(item) :  formatToJapaneseDate(item?.releaseDte) }}
           </small>
           <button
             @click="handleBookAction(item)"
-            class="p-1 px-2 rounded text-white text-sm block mx-auto absolute bottom-[8px] right-[8px]"
-            :class="store.isInList(item) ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'"
+            class="p-1 px-2 rounded block mx-auto absolute bottom-[8px] right-[8px]"
           >
-            <i :class="store.isInList(item) ? 'fa-solid fa-trash' : 'fa-solid fa-plus'"></i>
+            <i class=" fa-bookmark" :class="store.isInList(item) ? 'fa-solid' : 'fa-regular'" style="stroke-width: 1.5;"></i>
           </button>
 
         </div>

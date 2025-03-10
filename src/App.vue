@@ -25,3 +25,15 @@ export default {
   },
 };
 </script>
+
+<style>
+  html{
+    font-family: "Merriweather Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
+
+  body{
+    background-color: #FFEFD7;
+  }
+</style>
