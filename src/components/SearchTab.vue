@@ -44,7 +44,7 @@
 
 <script>
 import { useBookStore } from '@/stores/bookStore';
-import { computed, ref, onUnmounted } from 'vue';
+import { computed, ref, onUnmounted, nextTick } from 'vue';
 import { BrowserMultiFormatReader } from "@zxing/library";
 
 export default {
@@ -58,6 +58,10 @@ export default {
 
     const scanBarcode = async () => {
       isScanning.value = true;
+      
+      // Wait for the DOM to update with the video element
+      await nextTick();
+      
       scanner.value = new BrowserMultiFormatReader();
 
       try {
@@ -69,6 +73,7 @@ export default {
               detectedCode.value = result.text;
               store.isbnQuery = result.text;
               stopScanning();
+              store.fetchData();
             }
           }
         );

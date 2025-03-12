@@ -3,7 +3,7 @@
   <div class="p-4">
     <!-- Books Display -->
     <div 
-      v-if="store.displayingData?.length > 0" 
+      v-if="store.displayingData?.length > 0 && !store.isLoading" 
       :class="[
           'grid', 
           'gap-2', 
@@ -15,7 +15,7 @@
           <img
             :src="getThumbnail(item)"
             alt="Thumbnail"
-            class="block mx-auto mb-4 max-w-full"
+            class="block mx-auto mb-4 max-w-full shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
           />
           <strong class="block mb-2 leading-tight">
             {{ store.currentMode === 'search' ? item?.volumeInfo?.title : item?.title }}
@@ -48,7 +48,7 @@
     </div>
 
     <!-- No Results Message -->
-    <div v-else-if="store.currentMode === 'search' && store.hasSearched && isLoading" class="text-center text-lg font-medium my-4">
+    <div v-else-if="store.currentMode === 'search' && store.hasSearched && !isLoading" class="text-center text-lg font-medium my-4">
       <h5>見つかりませんでした。</h5>
     </div>
 

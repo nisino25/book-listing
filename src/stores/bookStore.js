@@ -11,7 +11,8 @@ export const useBookStore = defineStore('bookStore', {
         query: '',
         // authorQuery: '村上春樹',
         authorQuery: '',
-        isbnQuery: '',
+        isbnQuery: '9784120049781',
+        // isbnQuery: '',
         myBookList: [],
         displayingData: [],
         currentMode: 'search',
@@ -57,7 +58,8 @@ export const useBookStore = defineStore('bookStore', {
 
         // Search from Google Books API
         async fetchData() {
-            this.displayingData = []
+            
+            this.displayingData = [];
             this.isLoading = true;
 
             if(this.isbnQuery){
@@ -96,19 +98,23 @@ export const useBookStore = defineStore('bookStore', {
 
                     // Assign transformed data to displayingData
                     this.displayingData = transformedData;
-                    console.log(this.displayingData);
-                    this.isLoading = false;
-                    this.hasSearched = true;
+
+                    if(this.displayingData.length > 0){
+                        this.query = this.displayingData[0]?.volumeInfo?.title;
+                    }else{
+                        this.isLoading = false;
+                        this.hasSearched = true;
+                    }
+
                 } catch (error) {
                     this.isLoading = false;
                     this.hasSearched = true;
                     this.displayingData = []
                     console.error(error.message);
                 }
-
-
-                return;
             }
+            
+            if(!this.query) return;
 
             let url = `https://www.googleapis.com/books/v1/volumes?q=${this.query}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}&orderBy=relevance`;
             
@@ -117,6 +123,8 @@ export const useBookStore = defineStore('bookStore', {
             }
 
             try {
+                console.log('--------- tryna combine');
+                console.log(url);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`Status: ${response.status}`);
@@ -125,7 +133,9 @@ export const useBookStore = defineStore('bookStore', {
                 this.incomingTotal = json.totalItems;
                 this.isLoading = false;
                 this.hasSearched = true;
-                this.displayingData = json.items;
+                // this.displayingData = json.items;
+                this.displayingData = this.displayingData.concat(json.items);
+
                 console.log(this.displayingData)
             } catch (error) {
                 console.error(error.message);
