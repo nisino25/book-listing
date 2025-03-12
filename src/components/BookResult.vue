@@ -29,7 +29,7 @@
           </small>
           <button
             @click="handleBookAction(item)"
-            class="p-1 px-2 rounded block mx-auto absolute bottom-[8px] right-[8px]"
+            class="p-1 px-2 rounded block mx-auto absolute bottom-0 right-0"
           >
             <i class=" fa-bookmark" :class="store.isInList(item) ? 'fa-solid' : 'fa-regular'" style="stroke-width: 1.5;"></i>
           </button>
