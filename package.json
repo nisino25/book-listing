@@ -10,11 +10,13 @@
   "dependencies": {
     "@vue/cli-plugin-pwa": "~5.0.0",
     "@zxing/library": "^0.21.3",
+    "colorthief": "^2.6.0",
     "core-js": "^3.8.3",
     "pinia": "^3.0.1",
     "quagga": "^0.12.1",
     "register-service-worker": "^1.7.2",
     "tesseract.js": "^5.1.0",
+    "tinycolor2": "^1.6.0",
     "vue": "^3.2.13"
   },
   "devDependencies": {

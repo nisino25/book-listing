@@ -8,6 +8,9 @@
     <button @click="setMode('myList')" class="focus:outline-none">
       <i class="fa-solid fa-list text-3xl" :class="currentMode == 'myList' ? 'text-blue-400' : 'text-gray-400'"></i>
     </button>
+    <button @click="setMode('bookShelf')" class="focus:outline-none">
+      <i class="fa-solid fa-book text-3xl" :class="currentMode == 'bookShelf' ? 'text-blue-400' : 'text-gray-400'"></i>
+    </button>
   </div>
 </template>
 
@@ -21,8 +24,8 @@ export default {
 
         const setMode = async (mode) => {
             store.currentMode = mode;
-            if (mode === 'myList') {
-                await store.fetchApi();
+            if (mode === 'myList' || mode ==='bookShelf') {
+                await store.fetchSpreadSheetData();
                 store.displayingData = store.myBookList;
             } else {
                 store.hasSearched = false;

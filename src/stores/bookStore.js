@@ -9,6 +9,7 @@ export const useBookStore = defineStore('bookStore', {
         incomingTotal: null,
         maxResults: 40,
         query: '',
+        // query: '村上春樹',
         // authorQuery: '村上春樹',
         authorQuery: '',
         // isbnQuery: '9784120049781',
@@ -24,7 +25,7 @@ export const useBookStore = defineStore('bookStore', {
     }),
     actions: {
         // Load your Google Sheets data
-        fetchApi() {
+        fetchSpreadSheetData() {
             this.displayingData = [];
             this.myBookList = [];
             this.isLoading = true;
@@ -99,11 +100,12 @@ export const useBookStore = defineStore('bookStore', {
                     // Assign transformed data to displayingData
                     this.displayingData = transformedData;
 
-                    if(this.displayingData.length > 0){
+                    if(this.displayingData[0]?.volumeInfo){
                         this.query = this.displayingData[0]?.volumeInfo?.title;
                     }else{
                         this.isLoading = false;
                         this.hasSearched = true;
+                        return;
                     }
 
                 } catch (error) {
@@ -114,7 +116,7 @@ export const useBookStore = defineStore('bookStore', {
                 }
             }
             
-            if(!this.query) return;
+            // if(!this.query) return;
 
             let url = `https://www.googleapis.com/books/v1/volumes?q=${this.query}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}&orderBy=relevance`;
             
@@ -188,7 +190,6 @@ export const useBookStore = defineStore('bookStore', {
                 }
 
                 this.myBookList.push(addingData);
-                alert("Book added to your list!");
             }
             localStorage.setItem("myBookList", JSON.stringify(this.myBookList));
         },
