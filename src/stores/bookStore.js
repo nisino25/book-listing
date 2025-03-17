@@ -18,12 +18,43 @@ export const useBookStore = defineStore('bookStore', {
         displayingData: [],
         currentMode: 'search',
         baseUrl:
-            'https://script.google.com/macros/s/AKfycbwWv7_QS4f3Nd7DAyMtLEdCahNuHowCkv57zDyr19v3nwOAU6FQACd61e3VjFAw8ml1/exec',
+            'https://script.google.com/macros/s/AKfycbxcvPz6cET4I2PXKB-kBW61uWMImDWo78a-ZWkfa8NOJF66kdvZIscJr3uTvmEL_xxH/exec',
 
         isLoading: false,
         hasSearched: false,
     }),
     actions: {
+        initialFetch() {
+            // this.displayingData = [];
+            this.myBookList = [];
+            // this.isLoading = true;
+            // console.log(`getting reload`);
+            const url = `${this.baseUrl}?callback=jsonpCallback&action=fetchData`;
+            // console.log(url);
+
+            // Define the callback function globally
+            window.jsonpCallback = (data) => {
+                if (data.success) {
+                    // this.displayingData = data.data;
+                    // this.isLoading = false;
+                    this.myBookList = data.data;
+                    // console.log(this.myBookList);
+                } else {
+                    console.error("Error fetching data:", data.message);
+                }
+            };
+
+            // Dynamically add a <script> tag to call the JSONP API
+            const script = document.createElement("script");
+            script.src = url;
+            script.async = true;
+            document.body.appendChild(script);
+
+            // Clean up the <script> tag after the request
+            script.onload = () => {
+                document.body.removeChild(script);
+            };
+        },
         // Load your Google Sheets data
         fetchSpreadSheetData() {
             this.displayingData = [];
@@ -133,6 +164,7 @@ export const useBookStore = defineStore('bookStore', {
                 }
                 const json = await response.json();
                 this.incomingTotal = json.totalItems;
+                console.log(json)
                 this.isLoading = false;
                 this.hasSearched = true;
                 // this.displayingData = json.items;
@@ -148,7 +180,7 @@ export const useBookStore = defineStore('bookStore', {
             console.log('gettin more');
             const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
                 this.query
-            )}&maxResults=${this.maxResults}&startIndex=${this.fetchedBookData.length}`;
+            )}+inauthor:${this.authorQuery}&maxResults=${this.maxResults}&startIndex=${this.displayingData.length + 1}`;
 
             console.log(url);
 
@@ -201,7 +233,6 @@ export const useBookStore = defineStore('bookStore', {
         async addBookToSpreadsheet(book) {
 
             this.myBookList.push(book);
-            alert("Book added to your list!");
             
             const params = new URLSearchParams({
                 action: "addRow",
@@ -216,6 +247,8 @@ export const useBookStore = defineStore('bookStore', {
                 subtitle: book.volumeInfo?.subtitle ?? "",
                 status: "Not Started",
                 timestamp: new Date().getTime(),
+                pageCount: book.volumeInfo?.pageCount,
+                language: book.volumeInfo?.language,
             });
 
             try {
@@ -246,7 +279,6 @@ export const useBookStore = defineStore('bookStore', {
             if (!confirmDelete) return;
             
             this.myBookList.splice(index, 1);
-            alert("Book removed from your list.");
             
             const params = new URLSearchParams({
                 action: "deleteRow",

@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
 import SearchTab from '@/components/SearchTab.vue';
 import BookResult from '@/components/BookResult.vue';
 import BookShelf from '@/components/BookShelf.vue';
@@ -30,6 +31,9 @@ export default {
   },
   setup(){
     const store = useBookStore();
+    onMounted(() => {
+      store.initialFetch();
+    });
     return { store };
   }
 };

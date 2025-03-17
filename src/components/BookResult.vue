@@ -4,14 +4,14 @@
     <div class="p-4">
       <!-- Books Display -->
       <div 
-        v-if="store.displayingData?.length > 0 && !store.isLoading" 
+        v-if="store.displayingData?.length > 0 && !store.isLoading  && store.displayingData[0]?.id" 
         :class="[
             'grid', 
             'gap-2', 
             store.displayingData.length < 5 ? 'grid-cols-2' : 'grid-cols-3'
         ]"
         >
-        <template v-for="item in store.displayingData" :key="item.id">
+        <template v-for="item in store.displayingData" :key="item?.id">
           <div class="p-1 relative pb-[40px]">
             <img
               :src="getThumbnail(item)"
@@ -49,7 +49,7 @@
       </div>
 
       <!-- No Results Message -->
-      <div v-else-if="store.currentMode === 'search' && store.hasSearched && !isLoading" class="text-center text-lg font-medium my-4">
+      <div v-else-if="store.currentMode === 'search' && store.hasSearched && !store.isLoading" class="text-center text-lg font-medium my-4">
         <h5>見つかりませんでした。</h5>
       </div>
 

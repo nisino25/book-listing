@@ -65,7 +65,6 @@ export default {
 
 
     const  getBestTextColor = (bgColor) =>{
-      console.log(tinycolor(bgColor).isLight())
         return tinycolor(bgColor).isLight() ? "#000000" : "#FFFFFF";
     }
 
