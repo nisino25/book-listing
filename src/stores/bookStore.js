@@ -68,8 +68,26 @@ export const useBookStore = defineStore('bookStore', {
             window.jsonpCallback = (data) => {
                 if (data.success) {
                     this.displayingData = data.data;
-                    this.isLoading = false;
+                    
+                    this.displayingData = this.displayingData.sort((a, b) => {
+                        const defaultYear = 3000; // Move undefined years to the end
+                    
+                        const yearA = a.releaseDate ? parseInt(String(a.releaseDate).substring(0, 4)) : defaultYear;
+                        const yearB = b.releaseDate ? parseInt(String(b.releaseDate).substring(0, 4)) : defaultYear;
+                    
+                        return yearA - yearB; // Sort from oldest to newest
+                    });
+                    
+                    
+                    
+                    
+                    
+                    this.displayingData = this.displayingData.sort((a, b) => a.author.localeCompare(b.author));
+                    
                     this.myBookList = this.displayingData;
+                    this.isLoading = false;
+
+
                     console.log(this.myBookList);
                 } else {
                     console.error("Error fetching data:", data.message);

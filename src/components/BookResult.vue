@@ -12,7 +12,7 @@
         ]"
         >
         <template v-for="item in store.displayingData" :key="item?.id">
-          <div class="p-1 relative pb-[40px]">
+          <div class="p-1 relative pb-[30px]">
             <img
               :src="getThumbnail(item)"
               alt="Thumbnail"
@@ -26,7 +26,7 @@
               {{ store.currentMode === 'search' ? item.volumeInfo?.authors?.join(", ") ?? "Unknown" :  item.author }}
             </small>
             <small class="block text-gray-700 text-right">
-              {{ store.currentMode === 'search' ? getPublishedDate(item) :  formatToJapaneseDate(item?.releaseDte) }}
+              {{ store.currentMode === 'search' ? getPublishedDate(item) :  "" }}
             </small>
             <button
               @click="handleBookAction(item)"
